@@ -51,6 +51,14 @@ public class SlimeCustomizer extends JavaPlugin implements SlimefunAddon {
     public static final HashMap<ItemStack[], Pair<RecipeType, String>> existingRecipes = new HashMap<>();
     public static final HashMap<String, ItemGroup> allCategories = new HashMap<>();
 
+    private Config categories;
+    private Config items;
+    private Config machines;
+    private Config generators;
+    private Config solarGenerators;
+    private Config passiveMachines;
+    private Config mobDrops;
+
     @Override
     public void onEnable() {
 
@@ -109,23 +117,18 @@ public class SlimeCustomizer extends JavaPlugin implements SlimefunAddon {
             }
         }
 
-        Config categories = new Config(this, "categories.yml");
-        Config items = new Config(this, "items.yml");
-        Config machines = new Config(this, "machines.yml");
-        Config generators = new Config(this, "generators.yml");
-        Config solarGenerators = new Config(this, "solar-generators.yml");
-        Config passiveMachines = new Config(this, "passive-machines.yml");
-        Config mobDrops = new Config(this, "mob-drops.yml");
+        categories = new Config(this, "categories.yml");
+        items = new Config(this, "items.yml");
+        machines = new Config(this, "machines.yml");
+        generators = new Config(this, "generators.yml");
+        solarGenerators = new Config(this, "solar-generators.yml");
+        passiveMachines = new Config(this, "passive-machines.yml");
+        mobDrops = new Config(this, "mob-drops.yml");
 
         this.getCommand("slimecustomizer").setTabCompleter(new SCTabCompleter());
 
         Bukkit.getLogger().log(Level.INFO, "[SlimeCustomizer] " + ChatColor.BLUE + "Setting up custom stuff...");
-        if (!Categories.register(categories)) {return;}
-        if (!Items.register(items)) {return;}
-        if (!Machines.register(machines)) {return;}
-        if (!Generators.register(generators)) {return;}
-        if (!SolarGenerators.register(solarGenerators)) {return;}
-        if (!MobDrops.register(mobDrops)) {return;}
+        loadConfigs();
         Bukkit.getPluginManager().registerEvents(new Events(), instance);
     }
 
@@ -260,11 +263,28 @@ public class SlimeCustomizer extends JavaPlugin implements SlimefunAddon {
                     Utils.send(sender, "&cThat saveditem could not be found!");
                 }
             }
+        } else if (args[0].equals("reload")) {
+            categories.reload();
+            items.reload();
+            machines.reload();
+            generators.reload();
+            solarGenerators.reload();
+            mobDrops.reload();
+            loadConfigs();
         } else {
             Utils.send(sender, "&eAll commands can be found at &9" + Links.COMMANDS);
         }
 
         return true;
+    }
+
+    private void loadConfigs() {
+        if (!Categories.register(categories)) {return;}
+        if (!Items.register(items)) {return;}
+        if (!Machines.register(machines)) {return;}
+        if (!Generators.register(generators)) {return;}
+        if (!SolarGenerators.register(solarGenerators)) {return;}
+        if (!MobDrops.register(mobDrops)) {return;}
     }
 
     /**

@@ -1,5 +1,6 @@
 package io.ncbpfluffybear.slimecustomizer.registration;
 
+import io.github.thebusybiscuit.slimefun4.api.researches.Research;
 import io.github.thebusybiscuit.slimefun4.utils.SlimefunUtils;
 import io.ncbpfluffybear.slimecustomizer.SlimeCustomizer;
 import io.ncbpfluffybear.slimecustomizer.Utils;
@@ -9,6 +10,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.config.Config;
 import io.ncbpfluffybear.slimecustomizer.objects.NPCustomSCItem;
+import net.Indyuce.mmoitems.MMOItems;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -81,6 +83,11 @@ public class Items {
                 if (item == null) {return false;}
 
                 tempStack = new SlimefunItemStack(itemKey, item);
+            } else if (itemType.equalsIgnoreCase("MMO")) {
+                String mmoType = items.getString(itemKey + ".mmo-type");
+                String mmoId = items.getString(itemKey + ".mmo-id");
+                item = MMOItems.plugin.getItem(mmoType, mmoId);
+                tempStack = new SlimefunItemStack(itemKey, item);
             } else {
                 Utils.disable("The item-id for " + itemKey + " can only be CUSTOM or SAVEDITEM!");
                 return false;
@@ -99,7 +106,7 @@ public class Items {
             if (recipe == null) {return false;}
 
             if (placeable) {
-                if (itemType.equalsIgnoreCase("CUSTOM")) {
+                if (itemType.equalsIgnoreCase("CUSTOM") || itemType.equalsIgnoreCase("MMO")) {
                     new CustomSCItem(category, tempStack, recipeType, recipe
                     ).register(SlimeCustomizer.getInstance());
                 } else {
@@ -107,7 +114,7 @@ public class Items {
                     ).register(SlimeCustomizer.getInstance());
                 }
             } else {
-                if (itemType.equalsIgnoreCase("CUSTOM")) {
+                if (itemType.equalsIgnoreCase("CUSTOM") || itemType.equalsIgnoreCase("MMO")) {
                     new NPCustomSCItem(category, tempStack, recipeType, recipe
                     ).register(SlimeCustomizer.getInstance());
                 } else {

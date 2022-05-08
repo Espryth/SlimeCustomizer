@@ -7,6 +7,7 @@ import io.github.thebusybiscuit.slimefun4.libraries.dough.collections.Pair;
 import io.github.thebusybiscuit.slimefun4.utils.SlimefunUtils;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.config.Config;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
+import net.Indyuce.mmoitems.MMOItems;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -132,6 +133,10 @@ public class Utils {
                 }
             } else if (type.equalsIgnoreCase("SAVEDITEM")) {
                 recipe[i] = retrieveSavedItem(material, amount, true);
+            }else if (type.equalsIgnoreCase("MMO")) {
+                String mmoType = file.getString(path + "." + configIndex + ".mmo-type").toUpperCase();
+                String mmoId = file.getString(path + "." + configIndex + ".mmo-id");
+                recipe[i] = MMOItems.plugin.getItem(mmoType, mmoId);
             } else {
                 Utils.disable("Crafting ingredient " + configIndex + " for " + key
                     + " can only have a type of VANILLA, SLIMEFUN, SAVEDITEM, or NONE!");
