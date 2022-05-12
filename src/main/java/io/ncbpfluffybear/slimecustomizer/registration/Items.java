@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -102,24 +103,24 @@ public class Items {
             }
 
             /* Crafting recipe */
-            ItemStack[] recipe = Utils.buildCraftingRecipe(items, itemKey, recipeType);
-            if (recipe == null) {return false;}
-
-            if (placeable) {
-                if (itemType.equalsIgnoreCase("CUSTOM") || itemType.equalsIgnoreCase("MMO")) {
-                    new CustomSCItem(category, tempStack, recipeType, recipe
-                    ).register(SlimeCustomizer.getInstance());
+            Set<ItemStack[]> recipes = Utils.buildCraftingRecipes(items, itemKey, recipeType);
+            for(ItemStack[] recipe : recipes) {
+                if (placeable) {
+                    if (itemType.equalsIgnoreCase("CUSTOM") || itemType.equalsIgnoreCase("MMO")) {
+                        new CustomSCItem(category, tempStack, recipeType, recipe
+                        ).register(SlimeCustomizer.getInstance());
+                    } else {
+                        new CustomSCItem(category, tempStack, recipeType, recipe, item
+                        ).register(SlimeCustomizer.getInstance());
+                    }
                 } else {
-                    new CustomSCItem(category, tempStack, recipeType, recipe, item
-                    ).register(SlimeCustomizer.getInstance());
-                }
-            } else {
-                if (itemType.equalsIgnoreCase("CUSTOM") || itemType.equalsIgnoreCase("MMO")) {
-                    new NPCustomSCItem(category, tempStack, recipeType, recipe
-                    ).register(SlimeCustomizer.getInstance());
-                } else {
-                    new NPCustomSCItem(category, tempStack, recipeType, recipe, item
-                    ).register(SlimeCustomizer.getInstance());
+                    if (itemType.equalsIgnoreCase("CUSTOM") || itemType.equalsIgnoreCase("MMO")) {
+                        new NPCustomSCItem(category, tempStack, recipeType, recipe
+                        ).register(SlimeCustomizer.getInstance());
+                    } else {
+                        new NPCustomSCItem(category, tempStack, recipeType, recipe, item
+                        ).register(SlimeCustomizer.getInstance());
+                    }
                 }
             }
 
