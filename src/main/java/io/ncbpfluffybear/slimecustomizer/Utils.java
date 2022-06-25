@@ -21,6 +21,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 
 /**
@@ -129,9 +130,8 @@ public class Utils {
     }
 
     public static Set<ItemStack[]> buildCraftingRecipes(Config file, String key, RecipeType recipeType) {
-        Set<ItemStack[]> recipes = new HashSet<>();
+        List<ItemStack[]> recipes = new ArrayList<>();
         recipes.add(new ItemStack[9]);
-        ItemStack[] currentRecipe = new ItemStack[9];
         String path = key + ".crafting-recipe";
         for (int i = 0; i < 9; i++) {
             int configIndex = i + 1;
@@ -148,7 +148,29 @@ public class Utils {
                 return null;
             }
             ItemStack ingredient = buildRecipeIngredient(configIndex, key, type, material,mmoType, amount, recipeType);
-            currentRecipe[i] = ingredient;
+
+            int size = recipes.size();
+
+            for(int j = 0; j < size; j++) {
+                ItemStack[] recipe = recipes.get(j);
+                recipe[i] = ingredient;
+                if(file.contains(path + "." + configIndex + ".or")) {
+                    String orType = file.getString(path + "." + configIndex + ".or.type").toUpperCase();
+                    String orMaterial = file.getString(path + "." + configIndex + ".or.id").toUpperCase();
+                    String orMMOType = file.getString(path + "." + configIndex + "or.mmo-type");
+                    int orAmount;
+                    try {
+                        orAmount = Integer.parseInt(file.getString(path + "." + configIndex + ".or.amount"));
+                    } catch (NumberFormatException e) {
+                        Utils.disable("Crafting recipe item " + configIndex + " for " + key + " must be a positive " +
+                          "integer!");
+                        return null;
+                    }
+                    ItemStack[] orRecipe = Arrays.copyOf(recipe, 9);
+                    orRecipe[i] = buildRecipeIngredient(configIndex, key, orType, orMaterial, orMMOType, orAmount, recipeType);
+                    recipes.add(orRecipe);
+                }
+            }
 
             for(ItemStack[] recipe : recipes) {
                 recipe[i] = ingredient;
@@ -176,28 +198,32 @@ public class Utils {
                     " Please change the crafting-recipe-type or crafting-recipe.#.amount for " + key + ".");
                 return null;
             }
+        }
 
-            for(ItemStack[] recipe : recipes) {
-                AtomicBoolean invalid = new AtomicBoolean(false);
-                SlimeCustomizer.existingRecipes.forEach((itemStacks, recipeTypePair) -> {
-                    if (Arrays.equals(itemStacks, recipe) && recipeType == recipeTypePair.getFirstValue()) {
-                        Utils.disable("The crafting recipe for " + key + " is already being used for "
-                            + recipeTypePair.getSecondValue());
-                        invalid.set(true);
-                    }
-                });
-
-                if (invalid.get()) {
-                    return null;
+        int i = 0;
+        for(ItemStack[] recipe : recipes) {
+            AtomicBoolean invalid = new AtomicBoolean(false);
+            SlimeCustomizer.existingRecipes.forEach((itemStacks, recipeTypePair) -> {
+                if (Arrays.equals(itemStacks, recipe) && recipeType == recipeTypePair.getFirstValue()) {
+                    Utils.disable("The crafting recipe for " + key + " is already being used for "
+                      + recipeTypePair.getSecondValue());
+                    invalid.set(true);
                 }
+            });
 
-                if (!(recipeType == RecipeType.NULL)) {
-                    SlimeCustomizer.existingRecipes.put(recipe, new Pair<>(recipeType, key));
-                }
+            if (invalid.get()) {
+                return null;
             }
+
+            if (!(recipeType == RecipeType.NULL)) {
+                SlimeCustomizer.existingRecipes.put(recipe, new Pair<>(recipeType, key + "_" + i));
+            }
+            i++;
         }
         return recipes;
     }
+
+
     public static ItemStack[] buildCraftingRecipe(Config file, String key, RecipeType recipeType) {
         ItemStack[] recipe = new ItemStack[9];
         for (int i = 0; i < 9; i++) {
